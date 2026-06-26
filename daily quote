@@ -1,8 +1,9 @@
-// 매일 바뀌는 명언 위젯 (Medium - 좌:명언 / 우:날짜없음)
-// Scriptable iOS Widget
+// ===============================
+// Apple Style Daily Quote Widget
+// Scriptable
+// ===============================
 
-const QUOTES = [
-  { text: "천 리 길도 한 걸음부터.", author: "노자" },
+const QUOTES = [  { text: "천 리 길도 한 걸음부터.", author: "노자" },
   { text: "배움에는 왕도가 없다.", author: "유클리드" },
   { text: "실패는 성공의 어머니다.", author: "토마스 에디슨" },
   { text: "오늘 할 수 있는 일을 내일로 미루지 마라.", author: "벤자민 프랭클린" },
@@ -329,50 +330,109 @@ const QUOTES = [
   { text: "성공한 사람은 포기라는 단어를 모른다.", author: "격언" },
 ];
 
+
+// 오늘의 명언
 function getTodayQuote() {
   const now = new Date();
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-  return QUOTES[dayOfYear % QUOTES.length];
+  const start = new Date(now.getFullYear(), 0, 0);
+  const day = Math.floor((now - start) / 86400000);
+
+  return QUOTES[day % QUOTES.length];
 }
 
 async function createWidget() {
+
   const widget = new ListWidget();
+
+  // Apple 스타일 배경
+  widget.backgroundColor = Color.dynamic(
+    new Color("#F7F7F7"),
+    new Color("#111111")
+  );
+
+  widget.setPadding(20,20,20,20);
+
   const quote = getTodayQuote();
 
-  widget.backgroundColor = new Color("#ffffff", 0);
-  widget.setPadding(16, 18, 16, 18);
+  // ---------- HEADER ----------
+
+  const header = widget.addStack();
+  header.centerAlignContent();
+
+  const title = header.addText("TODAY'S QUOTE");
+
+  title.font = Font.semiboldSystemFont(10);
+
+  title.textColor = Color.dynamic(
+    new Color("#8A8A8E"),
+    new Color("#8E8E93")
+  );
+
+  header.addSpacer();
 
   const now = new Date();
-  const days = ["일", "월", "화", "수", "목", "금", "토"];
-  const dateStr = `${now.getMonth() + 1}월 ${now.getDate()}일 ${days[now.getDay()]}요일`;
 
-  const dateText = widget.addText(dateStr);
-  dateText.font = Font.systemFont(11);
-  dateText.textColor = new Color("#666666");
-  dateText.leftAlignText();
+  const date = header.addText(
+    `${String(now.getMonth()+1).padStart(2,"0")}.${String(now.getDate()).padStart(2,"0")}`
+  );
 
-  widget.addSpacer(6);
+  date.font = Font.mediumSystemFont(10);
 
-  const bar = widget.addStack();
-  bar.size = new Size(28, 2);
-  bar.backgroundColor = new Color("#000000");
-  bar.cornerRadius = 1;
+  date.textColor = Color.dynamic(
+    new Color("#8A8A8E"),
+    new Color("#8E8E93")
+  );
 
-  widget.addSpacer(10);
+  widget.addSpacer(12);
 
-  const quoteText = widget.addText(`"${quote.text}"`);
-  quoteText.font = Font.systemFont(14);
-  quoteText.textColor = new Color("#111111");
-  quoteText.minimumScaleFactor = 0.7;
+  // ---------- Divider ----------
+
+  const divider = widget.addStack();
+
+  divider.size = new Size(0,1);
+
+  divider.backgroundColor = Color.dynamic(
+    new Color("#D1D1D6"),
+    new Color("#2C2C2E")
+  );
+
+  widget.addSpacer(18);
+
+  // ---------- Quote ----------
+
+  const quoteText = widget.addText(
+    `“${quote.text}”`
+  );
+
+  quoteText.font = Font.mediumSystemFont(18);
+
+  quoteText.textColor = Color.dynamic(
+    Color.black(),
+    Color.white()
+  );
+
   quoteText.lineLimit = 5;
-  quoteText.leftAlignText();
 
-  widget.addSpacer(8);
+  quoteText.minimumScaleFactor = 0.72;
 
-  const authorText = widget.addText(`— ${quote.author}`);
-  authorText.font = Font.systemFont(11);
-  authorText.textColor = new Color("#555555");
-  authorText.rightAlignText();
+  widget.addSpacer();
+
+  // ---------- Author ----------
+
+  const authorRow = widget.addStack();
+
+  authorRow.addSpacer();
+
+  const author = authorRow.addText(
+    `— ${quote.author}`
+  );
+
+  author.font = Font.mediumSystemFont(12);
+
+  author.textColor = Color.dynamic(
+    new Color("#8A8A8E"),
+    new Color("#8E8E93")
+  );
 
   return widget;
 }
@@ -382,7 +442,7 @@ const widget = await createWidget();
 if (config.runsInWidget) {
   Script.setWidget(widget);
 } else {
-  widget.presentMedium();
+  await widget.presentMedium();
 }
 
 Script.complete();
